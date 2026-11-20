@@ -1,0 +1,39 @@
+{
+  "python": "3.14.2",
+  "os": "Windows",
+  "runs": [
+    {
+      "shell": "powershell.exe",
+      "version": "5.1.26100.9818",
+      "hex": "ef bb bf 7b 22 6f 6b 22 3a 74 72 75 65 7d",
+      "reads": {
+        "utf-8": {
+          "error": "JSONDecodeError",
+          "message": "Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)"
+        },
+        "utf-8-sig": {
+          "ok": true
+        },
+        "rb": {
+          "ok": true
+        }
+      }
+    },
+    {
+      "shell": "pwsh.exe",
+      "version": "7.6.9",
+      "hex": "7b 22 6f 6b 22 3a 74 72 75 65 7d",
+      "reads": {
+        "utf-8": {
+          "ok": true
+        },
+        "utf-8-sig": {
+          "ok": true
+        },
+        "rb": {
+          "ok": true
+        }
+      }
+    }
+  ]
+}

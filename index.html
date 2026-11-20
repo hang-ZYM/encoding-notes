@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PowerShell 写入 JSON 后，Python 为什么报 Unexpected UTF-8 BOM？｜字节实录</title>
+<meta name="description" content="实测 Windows PowerShell 5.1 与 PowerShell 7.6.9 使用 Set-Content -Encoding utf8 写入同一 JSON，再用 Python 3.14.2 读取。附字节对照、六组读取结果和复现脚本。">
+<link rel="stylesheet" href="style.css"></head>
+<body><header><div class="bar"><a class="brand" href="#top">字节实录</a><nav aria-label="页内导航"><a href="#results">实测结果</a><a href="#reproduce">复现与来源</a></nav></div></header>
+<main id="top"><div class="intro"><p class="topic">Windows 编码兼容性实测</p>
+<h1>同样写 UTF-8，<br>为什么 JSON 会读失败？</h1>
+<p class="summary">在 Windows PowerShell 5.1 中，<code>Set-Content -Encoding utf8</code> 会在文件开头写入 BOM。Python 用 <code>utf-8</code> 文本模式读取后，<code>json.load</code> 遇到这个标记会报错。相同命令在本次测试的 PowerShell 7.6.9 中生成了无 BOM 的文件，读取成功。</p>
+<p class="meta">2026 年 11 月 20 日实测　·　Windows　·　CPython 3.14.2</p></div>
+<section class="bytes" aria-labelledby="bytes-title"><h2 id="bytes-title">两个文件开头的字节</h2>
+<div class="bytegrid"><article><h3>Windows PowerShell 5.1</h3><p class="hex"><strong>EF BB BF</strong> <span>7B</span></p><p>前三个字节是 UTF-8 BOM，第四个字节才是左花括号。</p></article>
+<article><h3>PowerShell 7.6.9</h3><p class="hex"><strong>7B</strong> <span>22 6F 6B</span></p><p>文件直接以左花括号开头，后面是 JSON 键名。</p></article></div></section>
+<section id="results"><h2>六组读取结果</h2>
+<p>在两个 shell 中分别执行同一条命令，写入一份新文件。随后分别用三种方式在 Python 中打开文件并交给 <code>json.load</code>。</p>
+<pre><code>Set-Content -LiteralPath sample.json -Encoding utf8 -NoNewline -Value '{"ok":true}'</code></pre>
+<table><caption>读取同一段 JSON 的结果</caption><thead><tr><th scope="col">Python 打开方式</th><th scope="col">PowerShell 5.1 写入</th><th scope="col">PowerShell 7.6.9 写入</th></tr></thead>
+<tbody><tr><th scope="row"><code>encoding="utf-8"</code></th><td class="fail">解析失败</td><td>成功</td></tr><tr><th scope="row"><code>encoding="utf-8-sig"</code></th><td>成功</td><td>成功</td></tr><tr><th scope="row"><code>mode="rb"</code></th><td>成功</td><td>成功</td></tr></tbody></table>
+<p>失败组合返回 <code>JSONDecodeError: Unexpected UTF-8 BOM</code>。如果输入可能来自上述两种 shell，以下文本读取方式能处理本例中的两份文件。</p>
+<pre><code>import json
+
+with open("sample.json", encoding="utf-8-sig") as stream:
+    data = json.load(stream)</code></pre></section>
+<section id="reproduce"><h2>复现与来源</h2><p>在同时安装了 Windows PowerShell 和 PowerShell 7 的 Windows 环境运行 <code>python reproduce.py</code>。脚本在临时目录中创建样本，输出版本、完整十六进制字节和各次读取结果。本次 5.1 的完整版本为 5.1.26100.9818。其他写入命令及默认编码需单独验证。</p>
+<div class="downloads"><a href="measurements.json">查看原始结果 JSON</a><a href="reproduce.py" download>下载复现脚本</a></div>
+<p class="refs">规则出处　<a href="https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding">Microsoft 字符编码说明</a> · <a href="https://docs.python.org/3/library/json.html#character-encodings">Python JSON 编码说明</a></p>
+</section></main><footer>字节实录 · 独立兼容性测试</footer></body></html>
