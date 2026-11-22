@@ -2,7 +2,7 @@
 <html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PowerShell 写入 JSON 后，Python 为什么报 Unexpected UTF-8 BOM？｜字节实录</title>
-<meta name="description" content="实测 Windows PowerShell 5.1 与 PowerShell 7.6.9 使用 Set-Content -Encoding utf8 写入同一 JSON，再用 Python 3.14.2 读取。附字节对照、六组读取结果和复现脚本。">
+<meta name="description" content="2026 年 11 月 20 日实测：Windows PowerShell 5.1 用 Set-Content -Encoding utf8 写入的 JSON 样本，文件头前四字节为 EF BB BF 7B。另附 PowerShell 7.6.9 对照、Python 3.14.2 的六组读取结果和复现脚本。">
 <link rel="stylesheet" href="style.css"></head>
 <body><header><div class="bar"><a class="brand" href="#top">字节实录</a><nav aria-label="页内导航"><a href="#results">实测结果</a><a href="#reproduce">复现与来源</a></nav></div></header>
 <main id="top"><div class="intro"><p class="topic">Windows 编码兼容性实测</p>
